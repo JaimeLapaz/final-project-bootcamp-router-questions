@@ -131,8 +131,8 @@ def train_model(train_questions, val_questions, train_labels, val_labels, label_
         
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1_score", round(f1, 2))
-        mlflow.log_metric("precision", precision)
-        mlflow.log_metric("recall", recall)
+        mlflow.log_metric("precision", round(precision, 2))
+        mlflow.log_metric("recall", round(recall, 2))
 
         # Guardar modelo como artefacto de MLflow
         mlflow.pytorch.log_model(model, name_my_model)
@@ -156,4 +156,6 @@ def train_model(train_questions, val_questions, train_labels, val_labels, label_
         # Imprimir métricas y matriz de confusión
         print("Accuracy:", accuracy)
         print("F1-score:", round(f1, 2))
+        print("Recall:", round(recall, 2))
+        print("Precision:", round(precision, 2))
         save_confusion_matrix(all_val_labels, all_predictions, label_encoder.classes_, "confusion_matrix.png")
