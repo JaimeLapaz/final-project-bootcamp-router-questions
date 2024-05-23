@@ -12,7 +12,9 @@ mlruns
 mlartifacts
 
 # archivos que no se suben
-**/registro.json/**
+lab/evaluation/registro.json
+my_project/registro.json
+
 confusion_matrix.png
 # C extensions
 *.so
