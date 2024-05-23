@@ -47,15 +47,21 @@
         <div class="response" id="response"></div>
     </div>
     <script>
+        // Contador para generar IDs de pregunta
+        let questionCounter = 1;
+
+        // Función para enviar la pregunta y el feedback
         async function submitQuestion() {
             const question = document.getElementById('question').value;
+            const interactionId = generateID(); // Generar un ID único para la interacción
             const responseDiv = document.getElementById('response');
+            
             const response = await fetch('/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ question: question })
+                body: JSON.stringify({ id: interactionId, question: question }) // Enviar el ID de interacción junto con la pregunta
             });
             const data = await response.json();
             responseDiv.innerHTML = `
@@ -67,11 +73,19 @@
                     ${data.responses.map((resp, index) => `<li>Answer ${index + 1}: ${resp}</li>`).join('')}
                 </ul>
                 <p>Was this response useful?</p>
-                <button onclick="sendFeedback('${data.id}', true)">Yes</button>
-                <button onclick="sendFeedback('${data.id}', false)">No</button>
+                <button onclick="sendFeedback('${interactionId}', 'useful')">Yes</button>
+                <button onclick="sendFeedback('${interactionId}', 'useless')">No</button>
             `;
         }
 
+        // Función para generar un ID único basado en el contador de preguntas
+        function generateID() {
+            const id = 'RQ' + questionCounter;
+            questionCounter++;
+            return id;
+        }
+
+        // Función para enviar el feedback
         async function sendFeedback(interactionId, useful) {
             const response = await fetch('/feedback', {
                 method: 'POST',
@@ -82,6 +96,9 @@
             });
             if (response.ok) {
                 alert('Feedback received. Thank you!');
+                // Clear the response section and reset question field
+                document.getElementById('response').innerHTML = '';
+                document.getElementById('question').value = '';
             } else {
                 alert('Failed to send feedback. Please try again.');
             }

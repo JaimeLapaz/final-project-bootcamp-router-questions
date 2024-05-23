@@ -83,9 +83,9 @@ def get_response(question, responses_db):
     return answers, type_original
 
 # Función para registrar las interacciones en un archivo JSON
-def log_interaction(log_file, question, classification, response, type_info_original, response_time):
+def log_interaction(log_file, question, classification, response, type_info_original, response_time, interaction_id):
     log_entry = {
-        "id": str(uuid.uuid4()),
+        "id": interaction_id,
         "question": question,
         "classification": classification,
         "type_info_original": type_info_original,
@@ -124,6 +124,7 @@ def update_usefulness(log_file, interaction_id, useful):
     except Exception as e:
         print(f"Error updating usefulness: {e}")
 
+
 # Rutas de la aplicación Flask
 @app.route('/')
 def home():
@@ -132,6 +133,7 @@ def home():
 @app.route('/ask', methods=['POST'])
 def ask():
     data = request.json
+    interaction_id = data.get('id') # Obtener el ID de interacción del frontend
     question = data.get('question')
     if not question:
         return jsonify({'error': 'No question provided'}), 400
@@ -142,8 +144,7 @@ def ask():
     end_time = time.time()
 
     response_time = end_time - start_time
-    interaction_id = str(uuid.uuid4())
-    log_interaction(LOG_FILE, question, classification, response, type_original, response_time)
+    log_interaction(LOG_FILE, question, classification, response, type_original, response_time, interaction_id)
     
     return jsonify({
         'id': interaction_id,
