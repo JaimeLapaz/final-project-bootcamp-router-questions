@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .response {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Question Classifier</h1>
+        <div class="input-group">
+            <label for="question">Question:</label>
+            <textarea id="question" rows="4"></textarea>
+        </div>
+        <div class="button-group">
+            <button onclick="submitQuestion()">Submit</button>
+        </div>
+        <div class="response" id="response"></div>
+    </div>
+    <script>
+        async function submitQuestion() {
+            const question = document.getElementById('question').value;
+            const responseDiv = document.getElementById('response');
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: question })
+            });
+            const data = await response.json();
+            responseDiv.innerHTML = `
+                <h2>Response</h2>
+                <p><strong>Question:</strong> ${data.question}</p>
+                <p><strong>Classification:</strong> ${data.classification}</p>
+                <h3>Responses:</h3>
+                <ul>
+                    ${data.responses.map((resp, index) => `<li>Answer ${index + 1}: ${resp}</li>`).join('')}
+                </ul>
+                <p>Was this response useful?</p>
+                <button onclick="sendFeedback('${data.id}', true)">Yes</button>
+                <button onclick="sendFeedback('${data.id}', false)">No</button>
+            `;
+        }
+
+        async function sendFeedback(interactionId, useful) {
+            const response = await fetch('/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: interactionId, useful: useful })
+            });
+            if (response.ok) {
+                alert('Feedback received. Thank you!');
+            } else {
+                alert('Failed to send feedback. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
